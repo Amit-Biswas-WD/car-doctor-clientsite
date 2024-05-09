@@ -1,21 +1,40 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import loginImg from "../../assets/images/login/login.svg";
-import { createContext } from "react";
-import { AuthContext } from "../../Provider/AuthProvider";
+// import { useContext } from "react";
+// import { AuthContext } from "../../Provider/AuthProvider";
+import axios from "axios";
+import useAuth from "../../hooks/useAuth";
 
 const Login = () => {
-  const { singIn } = createContext(AuthContext);
+  const { signIn } = useAuth();
+  // const { signIn } = useContext(AuthContext);
+  const navigate = useNavigate();
+  const location = useLocation();
+  // console.log(location);
   const handleLogin = (e) => {
     e.preventDefault();
     const form = e.target;
     const email = form.email.value;
     const password = form.password.value;
-    console.log(email, password);
 
-    singIn(email, password)
-      .then((result) => {
-        const user = result.user;
-        console.log(user);
+    signIn(email, password)
+      .then(() => {
+        // const loggedInUser = result.user;
+        // console.log(loggedInUser);
+        const user = { email };
+        // get access token
+        axios
+          .post(
+            "https://car-doctor-server-amit44777-amit6.vercel.app/jwt",
+            user,
+            { withCredentials: true }
+          )
+          .then((res) => {
+            console.log(res.data);
+            if (res.data.success) {
+              navigate(location?.state ? location?.state : "/");
+            }
+          });
       })
       .catch((error) => console.log(error));
   };
